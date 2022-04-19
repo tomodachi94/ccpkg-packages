@@ -1,5 +1,5 @@
 -- ccpkg client
--- (c) 2022 tomodachi94
+-- (c) 2022 tomodachi94, with help from rolcam
 -- mit license
  
 if not http then
