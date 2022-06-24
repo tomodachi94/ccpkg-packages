@@ -30,15 +30,24 @@ local function setPath()
     help.setPath(helpPath)  
 end
  
+local function loadLibs()
+  local libPath = "/lib"
+  -- thank you carrot
+  for k,v in pairs(fs.list(path)) do
+    os.loadAPI(v)
+  end
+end
+ 
 local function start()
     if not fs.exists("/.ccstartd_initialized") then
         initializeDirs()
-  installStartup()
+  		installStartup()
         f = fs.open("/.ccstartd_initialized", "w")
         f.write("true")
         f.close()
     end
     setPath()
+ loadLibs()
 end
  
 start()
