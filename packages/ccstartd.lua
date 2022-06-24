@@ -13,6 +13,15 @@ local function initializeDirs()
     fs.makeDir("/share/help")
 end
  
+local function installStartup()
+ if fs.exists("/startup") then
+   fs.move("/startup", "startup.old")
+ end
+ 
+  local f = fs.open("startup", "w")
+  f.write("shell.run('/bin/ccstartd')") 
+end 
+ 
 local function setPath()
     local helpPath = help.path() .. ":/share/help"
     local binPath = shell.path() .. ":/bin"
@@ -24,6 +33,7 @@ end
 local function start()
     if not fs.exists("/.ccstartd_initialized") then
         initializeDirs()
+  installStartup()
         f = fs.open("/.ccstartd_initialized", "w")
         f.write("true")
         f.close()
