@@ -2,6 +2,10 @@
 -- (c) tomodachi94 2022
 -- mit license
 
+local tArgs = {...}
+command = tArgs[1]
+packageName = tArgs[2]
+
 os.loadAPI("/lib/ccpkg")
 
 if command == "install" then
@@ -10,10 +14,10 @@ if command == "install" then
 elseif command == "uninstall" then
 	ccpkg.uninstall(packageName)
 
-elseif command == "installlib" then
+elseif command == "install-lib" then
 	ccpkg.installLib(packageName)
 
-elseif command == "uninstalllib" then
+elseif command == "uninstall-lib" then
 	ccpkg.uninstallLib(packageName)
 
 elseif command == "info" then
