@@ -20,6 +20,8 @@ local function installStartup()
 
 	local f = fs.open("startup", "w")
 	f.write("shell.run('/bin/ccstartd')")
+ f.flush()
+ f.close()
 end
 
 local function setPath()
@@ -34,7 +36,8 @@ local function loadLibs()
 	local libPath = "/lib"
 
 	-- thank you carrot
-	for k, v in pairs(fs.list(path)) do
+ local files = fs.list(libPath)
+	for k, v in pairs(files) do
 		os.loadAPI(v)
 	end
 end
