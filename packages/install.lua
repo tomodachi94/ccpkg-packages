@@ -1,47 +1,49 @@
--- ccpkg setup utility
--- (c) tomodachi94 2022
--- mit license
-
-local packageHub = "https://tomodachi94.github.io/ccpkg-packages/packages/"
-
-local function mkdir(dir)
-  shell.run("mkdir" .. dir)
-end
-  
-local function initDirs()
-  mkdir("bin")
-  mkdir("doc")
-  mkdir("var")
-  mkdir("var/ccpkg")
-end
-    
-local function getPackage(package)
-     local url = packageHub.. package ..'.lua'
-    print("Connecting to " .. url .. "... ")
-    local response = http.get(url)
-        
-    if response then
-        print( "Success." )
-        
-        local sResponse = response.readAll()
-        response.close()
-        return sResponse
-    else
-        print( "Failed." )
-    end
-end
- 
-local function writePackage(file, path)
-    if not fs.exists(path) then
-   file1 = fs.open(path, "w")       
-   file1.write(file)
-   file1.flush()
-   print("File written to local storage.")
-    end
+if not http then
+	print("The http api is required to proceed with installation.")
+	return false
 end
 
-local def installCcpkg()
-  initDirs()
-  ccpkg-lua = getPackage("ccpkg")
-  writePackage(ccpkg-lua, "bin/ccpkg")
+local function get(sUrl)
+	--write("Connecting to " .. sUrl .. "... ")
+	local ok, err = http.checkURL(sUrl)
+	if not ok then
+		print("Failed.")
+		if err then
+			printError(err)
+		end
+		return nil
+	end
+
+	local response = http.get(sUrl, nil, true)
+	if not response then
+		print("Failed.")
+		return nil
+	end
+
+	--print("Success.")
+
+	local sResponse = response.readAll()
+	response.close()
+	return sResponse
 end
+
+local function write(content, path)
+	f = fs.open(path, "w")
+	f.write(content)
+	f.flush()
+	f.close()
+end
+
+local function installStuff()
+	fs.makeDir("/bin")
+	fs.makeDir("/lib")
+	write(get('https://tomodachi94.github.io/ccpkg-packages/packages/ccstartd.lua'), '/bin/ccstartd')
+	write(get('https://tomodachi94.github.io/ccpkg-packages/packages/ccpkg.lua'), '/bin/ccpkg')
+	write(get('https://tomodachi94.github.io/ccpkg-packages/lib/ccpkg.lua'), '/lib/ccpkg')
+	shell.run("/bin/ccstartd")
+	print('Rebooting...')
+	sleep(1)
+	os.reboot()
+end
+
+installStuff()
