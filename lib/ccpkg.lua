@@ -7,21 +7,18 @@ if not http then
 	printError("If you are an administrator, set http_enable to true in ComputerCraft.cfg. If you aren't an administrator, there isn't much else you can do other than ask an admin to enable it.")
 end
 
-if not settings then
-	printError("ccpkg requires the settings API.")
-	printError("Please ask your administrator to look into installing a polyfill for it.")
-end
+docs = {} -- documentation for all methods is located in this table, call print(ccpkg.docs["docs"]) for more information.
 
-local tArgs = {...}
+docs["docs"] = "A table which contains docs for all methods in the ccpkg API. Local methods are prefixed by 'local'."
+
 local packageHub = "https://tomodachi94.github.io/ccpkg-packages/"
 local destination = "/bin/"
-local destinationDocs = "/share/help/"
+--local destinationHelp = "/share/help/" -- unused
 local destinationLib = "/lib"
-local command = tArgs[1]
-local packageName = tArgs[2]
 
+docs["local.getPackage"] = "Returns a multiline string with the contents of a package downloaded from packageHub."
 local function getPackage(package)
-	local url = packageHub .. "packages" .. package .. '.lua'
+	local url = packageHub .. "packages/" .. package .. '.lua'
 	print("Connecting to " .. url .. "... ")
 	local response = http.get(url)
 
@@ -36,6 +33,7 @@ local function getPackage(package)
 	end
 end
 
+docs["local.getLib"] = "Returns a multiline string with the contents of a library in a similar fashion to ccpkg.getPackage."
 local function getLib(lib)
 	local url = packageHub .. "lib" .. package .. '.lua'
 	print("Connecting to " .. url .. "... ")
@@ -52,6 +50,7 @@ local function getLib(lib)
 	end
 end
 
+docs["local.write"] = "Writes a file to the specified path."
 local function writePackage(file, path)
 	--if not fs.exists(path) then
 	file1 = fs.open(path, "w")
@@ -61,6 +60,7 @@ local function writePackage(file, path)
 	--end
 end
 
+docs["uninstall"] = "Removes a file from /bin/package if it exists."
 function uninstall(package)
 	if fs.exists(destination .. package) then
 		fs.delete(destination .. package)
@@ -70,6 +70,7 @@ function uninstall(package)
 	end
 end
 
+docs["uninstallLib"] = "Removes a file from /lib/lib if it exists, in a similar fashion to ccpkg.uninstall."
 function uninstallLib(lib)
 	if fs.exists(destinationLib .. lib) then
 		fs.delete(destinationLib .. lib)
@@ -79,39 +80,30 @@ function uninstallLib(lib)
 	end
 end
 
+docs["install"] = "Installs a package 'package' to /bin/."
 function install(package)
 	if not fs.exists(destination..package) then
 		packageFile = getPackage(package)
 		finalDestination = destination .. package
-		writePackage(packageFile, finalDestination)
+		write(packageFile, finalDestination)
 	else
 		printError("Package '"..package.."' already exists.")
 	end
 end
 
+docs["installLib"] = "Installs a library 'lib' to /lib/, in a similar fashion to ccpkg.install."
 function installLib(lib)
 	if not fs.exists(destinationLib..lib) then
 		libFile = getPackage(lib)
 		finalDestination = destinationLib .. lib
-		writePackage(packageFile, finalDestination)
+		write(packageFile, finalDestination)
 	else
 		printError("Library '"..lib.."' already exists.")
 	end
 end
 
-function exists(package)
-	if fs.exists(destination..package)
-		return fs.exists(destination..package)
-	else
-		return false
-	end
-end
-
-function exec(package)
-	if fs.exists(destination..package) then
+docs["exec"] = "Executes a package 'package' with arguments 'arguments'."
+function exec(package, arguments)
+	if fs.exists(destination..package.." "..arguments) then
 		shell.run(package)
-end
-
-if not exists("ccpkg") then
-	install("ccpkg")
 end
