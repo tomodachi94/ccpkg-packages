@@ -7,11 +7,6 @@ if not http then
 	printError("If you are an administrator, set http_enable to true in ComputerCraft.cfg. If you aren't an administrator, there isn't much else you can do other than ask an admin to enable it.")
 end
 
-if not settings then
-	printError("ccpkg requires the settings API.")
-	printError("Please ask your administrator to look into installing a polyfill for it.")
-end
-
 local tArgs = {...}
 local packageHub = "https://tomodachi94.github.io/ccpkg-packages/"
 local destination = "/bin/"
