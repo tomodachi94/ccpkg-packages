@@ -2,10 +2,14 @@
 -- (c) tomodachi94 2022
 -- mit license
 
+
+-- command line arguments
 local tArgs = {...}
 command = tArgs[1]
 packageName = tArgs[2]
 
+-- Most of the code for ccpkg is in ../lib/ccpkg.lua. 
+-- You might want to check there if you want to figure out how I did something.
 os.loadAPI("/lib/ccpkg")
 
 if command == "install" then
