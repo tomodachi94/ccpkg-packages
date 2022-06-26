@@ -1,291 +1,207 @@
--- SHA-1 secure hash computation on pure Lua by Adafcaefc
--- December 12, 2017
--- https://pastebin.com/7WrDFCjJ [SHA1 on pure Lua v1]
+-- SHA-256, HMAC and PBKDF2 functions in ComputerCraft
+-- By Anavrins
+-- MIT License
+-- Pastebin: https://pastebin.com/6UV4qfNF (original), https://pastebin.com/Qk31PubV (fork)
+-- Usage: https://pastebin.com/q2SQ7eRg
+-- Last updated: June 25 2022
 
+local mod32 = 2^32
+local band    = bit32 and bit32.band or bit.band
+local bnot    = bit32 and bit32.bnot or bit.bnot
+local bxor    = bit32 and bit32.bxor or bit.bxor
+local blshift = bit32 and bit32.lshift or bit.blshift
+local upack   = unpack
 
-function trunc(input,len) -- truncate function
-  local tInput = {}
-  local  retval = ""
-  input:gsub(".",function(c) table.insert(tInput,c) end)
-  for i=0,len-1 do
-    if tInput[input:len()-i] == nil then tInput[input:len()-i] = "0" end
-    retval = tInput[input:len()-i]..retval
-  end
-  return retval
+local function rrotate(n, b)
+	local s = n/(2^b)
+	local f = s%1
+	return (s-f) + f*mod32
+end
+local function brshift(int, by)
+	local s = int / (2^by)
+	return s - s%1
 end
 
-function decToBin(input,sLen) -- decimal to binary (specific length)
-  local input = input + 1
-  local n = 0
-  local  retval = ""
-  while 2^n < input do
-    n = n + 1
-  end
-  for i=1,n do
-    if  input - 2^(n-i) > 0 then
-      input = input - 2^(n-i)
-      retval = retval.."1"
-    else
-      retval = retval.."0"
-    end
-  end
-  while retval:len () < sLen do
-    retval = "0"..retval
-  end
-  return retval
+local H = { -- First 32 bits of the fractional parts of the square roots of the first 8 primes 2..19
+	0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+	0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19,
+}
+
+local K = { -- First 32 bits of the fractional parts of the cube roots of the first 64 primes 2..311
+	0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+	0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+	0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+	0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+	0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+	0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+	0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+	0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
+}
+
+local function counter(incr)
+	local t1, t2 = 0, 0
+	if 0xFFFFFFFF - t1 < incr then
+		t2 = t2 + 1
+		t1 = incr - (0xFFFFFFFF - t1) - 1		
+	else t1 = t1 + incr
+	end
+	return t2, t1
 end
 
-function binToDec(input) -- binary to decimal
-  local input = input:reverse()
-  local retval = 0
-  local tdInput = {}
-  input:gsub(".",function(c) table.insert(tdInput,c) end)
-  for i=0,input:len() do
-    if tdInput[input:len()-i] == "1" then
-      retval = retval + 2^(input:len()-i-1)
-    end
-  end
-  return retval
+local function BE_toInt(bs, i)
+	return blshift((bs[i] or 0), 24) + blshift((bs[i+1] or 0), 16) + blshift((bs[i+2] or 0), 8) + (bs[i+3] or 0)
 end
 
-function binToHex(input) -- binary to hex
-  local retval = ""
-  local ti = {}
-  local convert = {
-    ["0000"] = "0",
-    ["0001"] = "1",
-    ["0010"] = "2",
-    ["0011"] = "3",
-    ["0100"] = "4",
-    ["0101"] = "5",
-    ["0110"] = "6",
-    ["0111"] = "7",
-    ["1000"] = "8",
-    ["1001"] = "9",
-    ["1010"] = "a",
-    ["1011"] = "b",
-    ["1100"] = "c",
-    ["1101"] = "d",
-    ["1110"] = "e",
-    ["1111"] = "f",
-  }
-  input:gsub(".",function(c) table.insert(ti,c) end)
-  for i=1,math.ceil(input:len()/4) do
-    retval = retval..convert[ti[4*i - 3]..ti[4*i - 2]..ti[4*i - 1]..ti[4*i]]
-  end
-  return retval
+local function preprocess(data)
+	local len = #data
+	local proc = {}
+	data[#data+1] = 0x80
+	while #data%64~=56 do data[#data+1] = 0 end
+	local blocks = math.ceil(#data/64)
+	for i = 1, blocks do
+		proc[i] = {}
+		for j = 1, 16 do
+			proc[i][j] = BE_toInt(data, 1+((i-1)*64)+((j-1)*4))
+		end
+	end
+	proc[blocks][15], proc[blocks][16] = counter(len*8)
+	return proc
 end
 
-function bitNot(s1) -- Bitwise operator [NOT]
-  local convert = {
-    ['0'] = "1",
-    ['1'] = "0"
-  }
-  local ts1 = {}
-  local  retval = ""
-  s1:gsub(".",function(c) table.insert(ts1,c) end)
-  for i=1,s1:len() do
-    retval = retval..convert[ts1[i]]
-  end
-  return retval
+local function digestblock(w, C)
+	for j = 17, 64 do
+		local v = w[j-15]
+		local s0 = bxor(rrotate(w[j-15], 7), rrotate(w[j-15], 18), brshift(w[j-15], 3))
+		local s1 = bxor(rrotate(w[j-2], 17), rrotate(w[j-2], 19),brshift(w[j-2], 10))
+		w[j] = (w[j-16] + s0 + w[j-7] + s1)%mod32
+	end
+	local a, b, c, d, e, f, g, h = upack(C)
+	for j = 1, 64 do
+		local S1 = bxor(rrotate(e, 6), rrotate(e, 11), rrotate(e, 25))
+		local ch = bxor(band(e, f), band(bnot(e), g))
+		local temp1 = (h + S1 + ch + K[j] + w[j])%mod32
+		local S0 = bxor(rrotate(a, 2), rrotate(a, 13), rrotate(a, 22))
+		local maj = bxor(bxor(band(a, b), band(a, c)), band(b, c))
+		local temp2 = (S0 + maj)%mod32
+		h, g, f, e, d, c, b, a = g, f, e, (d+temp1)%mod32, c, b, a, (temp1+temp2)%mod32
+	end
+	C[1] = (C[1] + a)%mod32
+	C[2] = (C[2] + b)%mod32
+	C[3] = (C[3] + c)%mod32
+	C[4] = (C[4] + d)%mod32
+	C[5] = (C[5] + e)%mod32
+	C[6] = (C[6] + f)%mod32
+	C[7] = (C[7] + g)%mod32
+	C[8] = (C[8] + h)%mod32
+	return C
 end
 
-function bitAnd(s1,s2) -- Bitwise operator [AND]
-  local convert = {
-    ['00'] = "0",
-    ['01'] = "0",
-    ['10'] = "0",
-    ['11'] = "1"
-  }
-  local ts1 = {}
-  local ts2 = {}
-  local  retval = ""
-  s1:gsub(".",function(c) table.insert(ts1,c) end)
-  s2:gsub(".",function(c) table.insert(ts2,c) end)
-  for i=1,s1:len() do
-    if ts1[i] == nil then
-      ts1[i] = "0"
-    end
-    if ts2[i] == nil then
-      ts2[i] = "0"
-    end
-    retval = retval..convert[ts1[i]..ts2[i]]
-  end
-  return retval
+local mt = {
+	__tostring = function(a) return string.char(unpack(a)) end,
+	__index = {
+		toHex = function(self, s) return ("%02x"):rep(#self):format(unpack(self)) end,
+		isEqual = function(self, t)
+			if type(t) ~= "table" then return false end
+			if #self ~= #t then return false end
+			local ret = 0
+			for i = 1, #self do
+				ret = bit32.bor(ret, bxor(self[i], t[i]))
+			end
+			return ret == 0
+		end,
+        sub = function(self, a, b)
+            local len = #self+1
+            local start = a%len
+            local stop = (b or len-1)%len
+            local ret = {}
+            local i = 1
+            for j = start, stop, start<stop and 1 or -1 do
+                ret[i] = self[j]
+                i = i+1
+            end
+            return setmetatable(ret, byteArray_mt)
+        end,
+	}
+}
+
+local function toBytes(t, n)
+	local b = {}
+	for i = 1, n do
+		b[(i-1)*4+1] = band(brshift(t[i], 24), 0xFF)
+		b[(i-1)*4+2] = band(brshift(t[i], 16), 0xFF)
+		b[(i-1)*4+3] = band(brshift(t[i], 8), 0xFF)
+		b[(i-1)*4+4] = band(t[i], 0xFF)
+	end
+	return setmetatable(b, mt)
 end
 
-function bitOr(s1,s2) -- Bitwise operator [OR]
-  local convert = {
-    ['00'] = "0",
-    ['01'] = "1",
-    ['10'] = "1",
-    ['11'] = "1"
-  }
-  local ts1 = {}
-  local ts2 = {}
-  local  retval = ""
-  s1:gsub(".",function(c) table.insert(ts1,c) end)
-  s2:gsub(".",function(c) table.insert(ts2,c) end)
-  for i=1,s1:len() do
-    if ts1[i] == nil then
-      ts1[i] = "0"
-    end
-    if ts2[i] == nil then
-      ts2[i] = "0"
-    end
-    retval = retval..convert[ts1[i]..ts2[i]]
-  end
-  return retval
+function digest(data)
+	local data = data or ""
+	data = type(data) == "table" and {upack(data)} or {tostring(data):byte(1,-1)}
+
+	data = preprocess(data)
+	local C = {upack(H)}
+	for i = 1, #data do C = digestblock(data[i], C) end
+	return toBytes(C, 8)
 end
 
+function hmac(data, key)
+	local data = type(data) == "table" and {upack(data)} or {tostring(data):byte(1,-1)}
+	local key = type(key) == "table" and {upack(key)} or {tostring(key):byte(1,-1)}
 
-function bitXor(s1,s2) -- Bitwise operator [XOR]
-  local convert = {
-    ['00'] = "0",
-    ['01'] = "1",
-    ['10'] = "1",
-    ['11'] = "0"
-  }
-  local ts1 = {}
-  local ts2 = {}
-  local  retval = ""
-  s1:gsub(".",function(c) table.insert(ts1,c) end)
-  s2:gsub(".",function(c) table.insert(ts2,c) end)
-  for i=1,s1:len() do
-    if ts1[i] == nil then
-      ts1[i] = "0"
-    end
-    if ts2[i] == nil then
-      ts2[i] = "0"
-    end
-    retval = retval..convert[ts1[i]..ts2[i]]
-  end
-  return retval
+	local blocksize = 64
+
+	key = #key > blocksize and digest(key) or key
+
+	local ipad = {}
+	local opad = {}
+	local padded_key = {}
+
+	for i = 1, blocksize do
+		ipad[i] = bxor(0x36, key[i] or 0)
+		opad[i] = bxor(0x5C, key[i] or 0)
+	end
+
+	for i = 1, #data do
+		ipad[blocksize+i] = data[i]
+	end
+
+	ipad = digest(ipad)
+
+	for i = 1, blocksize do
+		padded_key[i] = opad[i]
+		padded_key[blocksize+i] = ipad[i]
+	end
+
+	return digest(padded_key)
 end
 
-function lrot(input,amount) -- left rotate
-  local retval = ""
-  local ts1 = {}
-  local ts2 = {}
-  input:gsub(".",function(c) table.insert(ts1,c) end)
-  for i=1,amount do
-    for i=1,input:len() do
-      if i < input:len() then
-        ts2[i] = ts1[i+1]
-      else
-        ts2[i] = ts1[1]
-      end
-    end
-    ts1 = {}
-    retval = table.concat(ts2)
-    retval:gsub(".",function(c) table.insert(ts1,c) end)
-  end
-  return retval
-end
+function pbkdf2(pass, salt, iter, dklen)
+	local salt = type(salt) == "table" and salt or {tostring(salt):byte(1,-1)}
+	local hashlen = 32
+	local dklen = dklen or 32
+	local block = 1
+	local out = {}
 
-function sha1(input)
-  -- declaring original h0,h1,h2,h3,h4
-  local h0 = "01100111010001010010001100000001"
-  local h1 = "11101111110011011010101110001001"
-  local h2 = "10011000101110101101110011111110"
-  local h3 = "00010000001100100101010001110110"
-  local h4 = "11000011110100101110000111110000"
-  -- some other used variable
-  local bInput = ""
-  local ws = ""
-  local tInput = {}
-  local tbInput = {}
-  local w = {}
-  local ch = {}
-  -- converting input to binary
-  input:gsub(".",function(c) table.insert(tInput,c) end)
-  for i=1,input:len() do
-    bInput = bInput..decToBin(string.byte(tInput[i]),8)
-  end
-  -- append "1"
-  bInput = bInput.."1"
-  -- append "0" until the length is 448 MOD 512
-  while (bInput:len()-448)/512 ~= math.ceil((bInput:len()-448)/512) do
-    bInput = bInput.."0"
-  end
-  -- appending input length
-  bInput = bInput..decToBin(input:len()*8,64)
-  -- converting to chunk (size 512)
-  bInput:gsub(".",function(c) table.insert(tbInput,c) end)
-  for i=1,bInput:len()/512 do
-    ws = ""
-    for p=0,511 do
-      ws = tbInput[512*i - p]..ws
-    end
-    ch[i] = ws
-  end
-  -- chunk loop
-  for n=1,bInput:len()/512 do
-    ws = ""
-    w = {}
-    tbInput = {}
-    -- converting input into 16 word (size 32)
-    ch[n]:gsub(".",function(c) table.insert(tbInput,c) end)
-    for i=1,ch[n]:len()/32 do
-      ws = ""
-      for p=0,31 do
-        ws = tbInput[32*i - p]..ws
-      end
-      w[i] = ws
-    end
-    -- creating 80 word (size 32)
-    for i=17,80 do
-      w[i] =  lrot(bitXor(w[i-16],bitXor(w[i-14],bitXor(w[i-8],w[i-3]))),1)
-    end
-    -- variable declaration
-    local A = h0
-    local B = h1
-    local C = h2
-    local D = h3
-    local E = h4
-    -- some other used variable
-    local temp = 0
-    local f = 0
-    local k = 0
-    -- main loop
-    for i=1,80 do
-      -- function one
-      -- (B AND C) OR ((NOT B) AND D)
-      if i <=20 then
-        f = bitOr(bitAnd(B,C),bitAnd(bitNot(B),D))
-        k = "01011010100000100111100110011001"
-        -- function two
-        -- B XOR C XOR D
-      elseif i <=40 then
-        f = bitXor(B,bitXor(C,D))
-        k = "01101110110110011110101110100001"
-        -- function three
-        -- (B AND C) OR (B AND D) OR (C AND D)
-      elseif i <=60 then
-        f = bitOr(bitAnd(B,C),bitOr(bitAnd(B,D),bitAnd(C,D)))
-        k = "10001111000110111011110011011100"
-        -- function four
-        -- B XOR C XOR D
-      elseif i <=80 then
-        f = bitXor(B,bitXor(C,D))
-        k = "11001010011000101100000111010110"
-      end
-      -- creating temp variable
-      temp = trunc(decToBin(tonumber(lrot(A,5),2) + tonumber(f,2) + tonumber(E,2) + tonumber(k,2) + tonumber(w[i],2),0),32)
-      -- resetting A,B,C,D,E
-      E = D
-      D = C
-      C = lrot(B,30)
-      B = A
-      A = temp
-    end
-    -- adding the last value
-    h0 = trunc(decToBin(binToDec(h0) + binToDec(A),0),32)
-    h1 = trunc(decToBin(binToDec(h1) + binToDec(B),0),32)
-    h2 = trunc(decToBin(binToDec(h2) + binToDec(C),0),32)
-    h3 = trunc(decToBin(binToDec(h3) + binToDec(D),0),32)
-    h4 = trunc(decToBin(binToDec(h4) + binToDec(E),0),32)
-  end
-  -- return hex value
-  return binToHex(h0..h1..h2..h3..h4)
+	while dklen > 0 do
+		local ikey = {}
+		local isalt = {upack(salt)}
+		local clen = dklen > hashlen and hashlen or dklen
+
+		isalt[#isalt+1] = band(brshift(block, 24), 0xFF)
+		isalt[#isalt+1] = band(brshift(block, 16), 0xFF)
+		isalt[#isalt+1] = band(brshift(block, 8), 0xFF)
+		isalt[#isalt+1] = band(block, 0xFF)
+
+		for j = 1, iter do
+			isalt = hmac(isalt, pass)
+			for k = 1, clen do ikey[k] = bxor(isalt[k], ikey[k] or 0) end
+			if j % 200 == 0 then os.queueEvent("PBKDF2", j) coroutine.yield("PBKDF2") end
+		end
+		dklen = dklen - clen
+		block = block+1
+		for k = 1, clen do out[#out+1] = ikey[k] end
+	end
+
+	return setmetatable(out, mt)
 end
