@@ -1,0 +1,16 @@
+# shedit
+
+A modified version of the built-in editor that includes better syntax highlighting.
+
+## Usage
+
+shedit FILE
+
+## Credits
+
+- LoganDark2, creator of shedit and lib/lex
+
+## Links
+
+- [ComputerCraft Forum](http://www.computercraft.info/forums2/index.php?/topic/29308-shedit-an-editor-with-proper-syntax-highlighting/)
+- [Original Pastebin](https://pastebin.com/guNvJcZ9)
