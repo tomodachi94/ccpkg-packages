@@ -21,13 +21,15 @@ end
 local function get(sUrl)
 	write("Connecting to " .. sUrl .. "... ")
 
-	local ok, err = http.checkURL(sUrl)
-	if not ok then
-		print("Failed.")
-		if err then
-			printError(err)
+	if http.checkURL then -- not all versions of CC have checkURL
+		local ok, err = http.checkURL(sUrl)
+		if not ok then
+			print("Failed.")
+			if err then
+				printError(err)
+			end
+			return nil
 		end
-		return nil
 	end
 
 	local response = http.get(sUrl, nil, true)
