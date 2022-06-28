@@ -1,0 +1,16 @@
+# ccpkg
+
+A package manager for ComputerCraft.
+
+## Usage
+
+ccpkg [COMMAND] [ARGUMENTS]
+
+### Commands
+
+- install: Installs a package.
+- uninstall: Removes a package.
+- install-help: Installs help for a package.
+- uninstall-help Removes help for a package.
+- install-lib: Installs a library.
+- uninstall-lib: Removes a library.
