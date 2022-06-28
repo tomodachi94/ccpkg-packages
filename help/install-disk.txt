@@ -1,0 +1,13 @@
+# install-disk
+
+Tools for installing ccpkg and ccstartd from a disk and for creating such a disk.
+
+## Arguments
+
+install-disk [COMMAND] <OPTION>
+
+Valid commands:
+- install: Installs ccpkg and ccstartd to local computer 
+- install-unattended: Installs ccpkg and ccstartd to local computer without prompts. WARNING: THIS IS FOR AUTOMATION ONLY, USE AT OWN RISK.
+- make: Creates an install disk for [TARGET], using files present on the computer to do so.
+    - OPTIONS: Requires option to be a folder.
