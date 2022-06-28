@@ -13,12 +13,13 @@ docs["docs"] = "A table which contains docs for all methods in the ccpkg API. Lo
  
 local packageHub = "tomodachi94.github.io/ccpkg-packages/"
 local destination = "/bin/"
---local destinationHelp = "/share/help/" -- unused
+local destinationHelp = "/share/help/" -- unused
 local destinationLib = "/lib"
  
-docs["local.getFromHub"] = "Gets a file from sHub/sSubDir/sPackage.lua."
-local function getFromHub(sHub, sSubDir, sPackage)
-    local url = "https://" .. fs.combine(fs.combine(packageHub, sSubDir), sPackage..".lua")
+docs["local.getFromHub"] = "Gets a file from sHub/sSubDir/sPackage.sExtension. sExtension defaults to .lua, for backwards compatibility."
+local function getFromHub(sHub, sSubDir, sPackage, sExtension)
+	sExtension = sExtension or ".lua" -- default sExtension to .lua
+    local url = "https://" .. fs.combine(fs.combine(packageHub, sSubDir), sPackage..sExtension)
     --print(url)
     --print(sPackage)
     print("Connecting to " .. url .. "... ")
@@ -55,6 +56,16 @@ function uninstall(package)
     end
 end
  
+docs["uninstallHelp"] = "Removes a file from /share/help/package if it exists."
+function uninstallHelp(package)
+    if fs.exists(destinationHelp .. package) then
+        fs.delete(destinationHelp .. package)
+        print("Removed help for " .. package)
+    else
+        printError("Help for package '"..package.."' was never installed.")
+    end
+end
+ 
 docs["uninstallLib"] = "Removes a file from /lib/lib if it exists, in a similar fashion to ccpkg.uninstall."
 function uninstallLib(lib)
     if fs.exists(destinationLib .. lib) then
@@ -73,6 +84,17 @@ function install(package)
         write(packageFile, finalDestination)
     --else
         --printError("Package '"..package.."' already exists.")
+    end
+end
+ 
+docs["installHelp"] = "Installs help for a package 'package' to /share/help."
+function installHelp(package)
+    if not fs.exists(destination..package) and package then
+        packageFile = getFromHub(packageHub, "help", package, ".txt")
+        finalDestination = destinationHelp .. package
+        write(packageFile, finalDestination)
+    --else
+        --printError("Help for package '"..package.."' already exists.")
     end
 end
  
