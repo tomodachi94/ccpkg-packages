@@ -20,14 +20,9 @@ elseif command == "install-lib" then
 elseif command == "uninstall-lib" then
 	ccpkg.uninstallLib(packageName)
 
-elseif command == "info" then
-	local doesExist = exists(packageName)
-	if doesExist == true then
-		print("Package '"..packageName.."' is installed to "..doesExist)
-	else
-		print("Package '"..packagename"' is not present on this system.")
+elseif command == nil then
+	printError("ccpkg: No command specified.")
 
 else
 	printError("Invalid command '" .. command .. "'.")
-
 end
