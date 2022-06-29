@@ -40,10 +40,13 @@ end
  
 docs["local.write"] = "Writes a file to the specified path."
 local function write(sContent, sPath)
-    file1 = fs.open(sPath, "w")
-    file1.write(sContent)
-    file1.flush()
-    print("File written to local storage.")
+	if sContent do -- Checking to make sure content is there, to prevent writing an empty file
+	    file1 = fs.open(sPath, "w")
+	    file1.write(sContent)
+	    file1.flush()
+	    print("File written to local storage.")
+	else
+		return false
 end
  
 docs["uninstall"] = "Removes a file from /bin/package if it exists."
