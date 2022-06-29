@@ -38,7 +38,7 @@ local function loadLibs()
 	-- thank you carrot
  local files = fs.list(libPath)
 	for k, v in pairs(files) do
-		os.loadAPI(v)
+		os.loadAPI(fs.combine(libPath, v))
 	end
 end
 
