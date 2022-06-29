@@ -19,7 +19,7 @@ local destinationLib = "/lib"
 docs["local.getFromHub"] = "Gets a file from sHub/sSubDir/sPackage.sExtension. sExtension defaults to .lua, for backwards compatibility."
 local function getFromHub(sHub, sSubDir, sPackage, sExtension)
 	sExtension = sExtension or ".lua" -- default sExtension to .lua
-    local url = "https://" .. fs.combine(fs.combine(packageHub, sSubDir), sPackage..sExtension)
+    local url = "https://" .. fs.combine(fs.combine(sHub, sSubDir), sPackage..sExtension)
     --print(url)
     --print(sPackage)
     print("Connecting to " .. url .. "... ")
@@ -39,48 +39,48 @@ local function getFromHub(sHub, sSubDir, sPackage, sExtension)
 end
  
 docs["local.write"] = "Writes a file to the specified path."
-local function write(file, path)
-    file1 = fs.open(path, "w")
-    file1.write(file)
+local function write(sContent, sPath)
+    file1 = fs.open(sPath, "w")
+    file1.write(sContent)
     file1.flush()
     print("File written to local storage.")
 end
  
 docs["uninstall"] = "Removes a file from /bin/package if it exists."
-function uninstall(package)
-    if fs.exists(destination .. package) then
-        fs.delete(destination .. package)
-        print("Removed " .. package)
+function uninstall(sPackage)
+    if fs.exists(destination .. sPackage) then
+        fs.delete(destination .. s{ackage)
+        print("Removed " .. sPackage)
     else
-        printError("Package was never installed.")
+        printError("Package '"..sPackage.."' was never installed.")
     end
 end
  
 docs["uninstallHelp"] = "Removes a file from /share/help/package if it exists."
-function uninstallHelp(package)
-    if fs.exists(destinationHelp .. package) then
-        fs.delete(destinationHelp .. package)
-        print("Removed help for " .. package)
+function uninstallHelp(sPackage)
+    if fs.exists(destinationHelp .. sPackage) then
+        fs.delete(destinationHelp .. sPackage)
+        print("Removed help for " .. sPackage)
     else
-        printError("Help for package '"..package.."' was never installed.")
+        printError("Help for package '"..sPackage.."' was never installed.")
     end
 end
  
 docs["uninstallLib"] = "Removes a file from /lib/lib if it exists, in a similar fashion to ccpkg.uninstall."
-function uninstallLib(lib)
-    if fs.exists(destinationLib .. lib) then
-        fs.delete(destinationLib .. lib)
-        print("Removed library " .. lib)
+function uninstallLib(sPackage)
+    if fs.exists(destinationLib .. sPackage) then
+        fs.delete(destinationLib .. sPackage)
+        print("Removed library " .. sPackage)
     else
-        printError("Library was never installed.")
+        printError("Library '"..sPackage.."' was never installed.")
     end
 end
  
 docs["install"] = "Installs a package 'package' to /bin/."
-function install(package)
-    if not fs.exists(destination..package) and package then
-        packageFile = getFromHub(packageHub, "packages", package)
-        finalDestination = destination .. package
+function install(sPackage)
+    if not fs.exists(destination..sPackage) and sPackage then
+        local packageFile = getFromHub(packageHub, "packages", sPackage)
+        local finalDestination = destination .. sPackage
         write(packageFile, finalDestination)
     --else
         --printError("Package '"..package.."' already exists.")
@@ -88,10 +88,10 @@ function install(package)
 end
  
 docs["installHelp"] = "Installs help for a package 'package' to /share/help."
-function installHelp(package)
-    if not fs.exists(destination..package) and package then
-        packageFile = getFromHub(packageHub, "help", package, ".txt")
-        finalDestination = destinationHelp .. package
+function installHelp(sPackage)
+    if not fs.exists(destination..sPackage) and sPackage then
+        local packageFile = getFromHub(packageHub, "help", sPackage, ".txt")
+        local finalDestination = destinationHelp .. sPackage
         write(packageFile, finalDestination)
     --else
         --printError("Help for package '"..package.."' already exists.")
@@ -99,13 +99,13 @@ function installHelp(package)
 end
  
 docs["installLib"] = "Installs a library 'lib' to /lib/, in a similar fashion to ccpkg.install."
-function installLib(lib)
-    if not fs.exists(destinationLib..lib) then
+function installLib(sPackage)
+    if not fs.exists(destinationLib..sPackage) then
         packageFile = getFromHub(packageHub, "lib", sPackage)
-        finalDestination = destinationLib .. lib
+        finalDestination = destinationLib .. sPackage
         write(packageFile, finalDestination)
     else
-        printError("Library '"..lib.."' already exists.")
+        printError("Library '"..sPackage.."' already exists.")
     end
 end
  
