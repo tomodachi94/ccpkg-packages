@@ -1,0 +1,7 @@
+# lsperipheral
+
+Lists all peripherals attached to the computer, either directly or by a wired modem.
+
+# Usage
+
+lsperipheral
