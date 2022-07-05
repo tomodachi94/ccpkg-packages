@@ -14,7 +14,7 @@ docs["docs"] = "A table which contains docs for all methods in the ccpkg API. Lo
 local packageHub = "tomodachi94.github.io/ccpkg-packages/"
 local destination = "/bin/"
 local destinationHelp = "/share/help/" -- unused
-local destinationLib = "/lib"
+local destinationLib = "/lib/"
  
 docs["local.getFromHub"] = "Gets a file from sHub/sSubDir/sPackage.sExtension. sExtension defaults to .lua, for backwards compatibility."
 local function getFromHub(sHub, sSubDir, sPackage, sExtension)
