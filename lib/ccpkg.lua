@@ -40,19 +40,20 @@ end
  
 docs["local.write"] = "Writes a file to the specified path."
 local function write(sContent, sPath)
-	if sContent do -- Checking to make sure content is there, to prevent writing an empty file
+	if sContent then -- Checking to make sure content is there, to prevent writing an empty file
 	    file1 = fs.open(sPath, "w")
 	    file1.write(sContent)
 	    file1.flush()
 	    print("File written to local storage.")
 	else
 		return false
+	end
 end
  
 docs["uninstall"] = "Removes a file from /bin/package if it exists."
 function uninstall(sPackage)
     if fs.exists(destination .. sPackage) then
-        fs.delete(destination .. s{ackage)
+        fs.delete(destination .. sPackage)
         print("Removed " .. sPackage)
     else
         printError("Package '"..sPackage.."' was never installed.")
@@ -82,7 +83,7 @@ end
 docs["install"] = "Installs a package 'package' to /bin/."
 function install(sPackage)
     if not fs.exists(destination..sPackage) and sPackage then
-        local packageFile = getFromHub(packageHub, "packages", sPackage)
+        local packageFile = getFromHub(packageHub, "bin", sPackage)
         local finalDestination = destination .. sPackage
         write(packageFile, finalDestination)
     --else
