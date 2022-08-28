@@ -1,0 +1,7 @@
+{
+    "sha": {
+        "provides": [
+            "/lib/sha.lua"
+        ]
+    }
+}

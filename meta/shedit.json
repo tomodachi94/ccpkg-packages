@@ -1,0 +1,11 @@
+{
+    "shedit": {
+        "requires": [
+            "lex"
+        ],
+        "provides": [
+            "/bin/shedit.lua",
+            "/help/shedit.txt"
+        ]
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "lsperi": {
+        "provides": [
+            "/bin/lsperi.lua"
+        ]
+    }
+}

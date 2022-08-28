@@ -1,0 +1,7 @@
+{
+    "ccstartd": {
+        "provides": [
+            "/bin/ccstartd.lua"
+        ]
+    }
+}

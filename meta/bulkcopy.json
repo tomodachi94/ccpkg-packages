@@ -1,0 +1,7 @@
+{
+    "bulkcopy": {
+        "provides": [
+            "/bin/bulkcopy.lua"
+        ]
+    }
+}

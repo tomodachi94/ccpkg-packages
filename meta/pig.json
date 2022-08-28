@@ -1,0 +1,7 @@
+{
+    "pig": {
+        "provides": [
+            "/bin/pig"
+        ]
+    }
+}

@@ -1,0 +1,8 @@
+{
+    "luaide": {
+        "provides": [
+            "/bin/luaide.lua",
+            "/help/luaide.txt"
+        ]
+    }
+}

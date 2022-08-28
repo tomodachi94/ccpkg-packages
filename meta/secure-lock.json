@@ -1,0 +1,7 @@
+{
+    "secure-lock": {
+        "provides": [
+            "/bin/secure-lock"
+        ]
+    }
+}

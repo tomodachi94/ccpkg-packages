@@ -1,0 +1,7 @@
+{
+    "lex": {
+        "provides": [
+            "/lib/lex.lua"
+        ]
+    }
+}

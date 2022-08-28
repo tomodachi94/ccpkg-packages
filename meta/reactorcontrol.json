@@ -1,0 +1,7 @@
+{
+    "reactorcontrol": {
+        "provides": [
+            "/bin/reactorcontrol.lua"
+        ]
+    }
+}
