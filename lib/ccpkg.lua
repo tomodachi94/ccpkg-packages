@@ -90,32 +90,10 @@ function install(sPackage)
         --printError("Package '"..package.."' already exists.")
     end
 end
- 
-docs["installHelp"] = "Installs help for a package 'package' to /share/help."
-function installHelp(sPackage)
-    if not fs.exists(destination..sPackage) and sPackage then
-        local packageFile = getFromHub(packageHub, "help", sPackage, ".txt")
-        local finalDestination = destinationHelp .. sPackage
-        write(packageFile, finalDestination)
-    --else
-        --printError("Help for package '"..package.."' already exists.")
-    end
-end
- 
-docs["installLib"] = "Installs a library 'lib' to /lib/, in a similar fashion to ccpkg.install."
-function installLib(sPackage)
-    if not fs.exists(destinationLib..sPackage) then
-        packageFile = getFromHub(packageHub, "lib", sPackage)
-        finalDestination = destinationLib .. sPackage
-        write(packageFile, finalDestination)
-    else
-        printError("Library '"..sPackage.."' already exists.")
-    end
-end
- 
-docs["exec"] = "Executes a package 'package' with arguments 'arguments'."
+
+docs["exec"] = "Executes a binary package 'package' with arguments 'arguments'."
 function exec(package, arguments)
-    if fs.exists(destination..package.." "..arguments) then
-        shell.run(package)
+    if fs.exists(fs.combine("/bin/", package)) then
+        shell.run(fs.combine("/bin/", package) .." ".. arguments)
     end
 end
