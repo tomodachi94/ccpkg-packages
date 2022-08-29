@@ -5,7 +5,7 @@
         ],
         "provides": [
             "/bin/shedit.lua",
-            "/help/shedit.txt"
+            "/share/help/shedit.txt"
         ]
     }
 }

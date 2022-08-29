@@ -3,7 +3,7 @@
         "provides": [
             "/lib/ccpkg.lua",
             "/bin/ccpkg.lua",
-            "/help/ccpkg.txt"
+            "/share/help/ccpkg.txt"
         ]
     }    
 }

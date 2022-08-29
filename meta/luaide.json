@@ -2,7 +2,7 @@
     "luaide": {
         "provides": [
             "/bin/luaide.lua",
-            "/help/luaide.txt"
+            "/share/help/luaide.txt"
         ]
     }
 }
