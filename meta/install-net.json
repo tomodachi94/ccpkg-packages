@@ -1,0 +1,10 @@
+{
+    "install-net": {
+        "provides": [
+            "/bin/install-net.lua"
+        ],
+        "depends": [
+            "ccpkg"
+        ]
+    }
+}

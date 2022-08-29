@@ -1,0 +1,7 @@
+{
+    "brainfuck": {
+        "provides": [
+            "/bin/brainfuck.lua"
+        ]
+    }
+}

@@ -1,0 +1,9 @@
+{
+    "ccpkg" : {
+        "provides": [
+            "/lib/ccpkg.lua",
+            "/bin/ccpkg.lua",
+            "/help/ccpkg.txt"
+        ]
+    }    
+}

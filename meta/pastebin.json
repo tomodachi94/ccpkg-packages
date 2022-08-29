@@ -1,0 +1,7 @@
+{
+    "pastebin": {
+        "provides": [
+            "/bin/json"
+        ]
+    }
+}
