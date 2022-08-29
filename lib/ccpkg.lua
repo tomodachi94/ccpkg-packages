@@ -15,15 +15,11 @@ local packageHub = "tomodachi94.github.io/ccpkg-packages/"
 local destination = "/bin/"
 local destinationHelp = "/share/help/" -- unused
 local destinationLib = "/lib/"
- 
-docs["local.getFromHub"] = "Gets a file from sHub/sSubDir/sPackage.sExtension. sExtension defaults to .lua, for backwards compatibility."
-local function getFromHub(sHub, sSubDir, sPackage, sExtension)
-	sExtension = sExtension or ".lua" -- default sExtension to .lua
-    local url = "https://" .. fs.combine(fs.combine(sHub, sSubDir), sPackage..sExtension)
-    --print(url)
-    --print(sPackage)
-    print("Connecting to " .. url .. "... ")
-    local response, httpError = http.get(url)
+
+docs["local.smartHttp"] = "Returns contents of HTTP"
+local function smartHttp(sUrl)
+    print("Connecting to " .. sUrl .. "... ")
+    local response, httpError = http.get(sUrl)
  
     if response then
         print("Success.")
@@ -49,43 +45,34 @@ local function write(sContent, sPath)
 		return false
 	end
 end
- 
-docs["uninstall"] = "Removes a file from /bin/package if it exists."
+
+docs["uninstall"] = "Removes a package according to its manifest."
 function uninstall(sPackage)
-    if fs.exists(destination .. sPackage) then
-        fs.delete(destination .. sPackage)
-        print("Removed " .. sPackage)
+    local metadata = smartHttp("https://" .. packageHub .. "meta/" .. sPackage .. ".json")
+    local metadata = textutils.unserializeJSON(metadata)
+    if metadata[sPackage] == false then
+        printError("ccpkg: uninstall: Package was never installed")
     else
-        printError("Package '"..sPackage.."' was never installed.")
+        for k,v in pairs(metadata[sPackage]["provides"]) do
+            fs.delete(v)
+        end
+        -- else
+            -- printError("Package '"..sPackage.."' was never installed.")
     end
 end
- 
-docs["uninstallHelp"] = "Removes a file from /share/help/package if it exists."
-function uninstallHelp(sPackage)
-    if fs.exists(destinationHelp .. sPackage) then
-        fs.delete(destinationHelp .. sPackage)
-        print("Removed help for " .. sPackage)
-    else
-        printError("Help for package '"..sPackage.."' was never installed.")
-    end
-end
- 
-docs["uninstallLib"] = "Removes a file from /lib/lib if it exists, in a similar fashion to ccpkg.uninstall."
-function uninstallLib(sPackage)
-    if fs.exists(destinationLib .. sPackage) then
-        fs.delete(destinationLib .. sPackage)
-        print("Removed library " .. sPackage)
-    else
-        printError("Library '"..sPackage.."' was never installed.")
-    end
-end
- 
-docs["install"] = "Installs a package 'package' to /bin/."
+
+docs["install"] = "Installs a package 'package' according to its manifest."
 function install(sPackage)
-    if not fs.exists(destination..sPackage) and sPackage then
-        local packageFile = getFromHub(packageHub, "bin", sPackage)
-        local finalDestination = destination .. sPackage
-        write(packageFile, finalDestination)
+    local metadata = smartHttp("https://" .. packageHub .. "meta/" .. sPackage .. ".json")
+    local metadata = textutils.unserializeJSON(metadata)
+    if not fs.exists(metadata[sPackage]["provides"][1]) then
+        for _,v in pairs(metadata[sPackage]["provides"]) do
+            local url = "https://" .. fs.combine(packageHub, v)
+            local file = smartHttp(url)
+            v = string.gsub(v, ".lua", "")
+            v = string.gsub(v, ".txt", "")
+            write(file, v)
+        end
     --else
         --printError("Package '"..package.."' already exists.")
     end

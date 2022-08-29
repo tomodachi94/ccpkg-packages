@@ -14,18 +14,6 @@ if command == "install" then
 elseif command == "uninstall" then
 	ccpkg.uninstall(packageName)
 
-elseif command == "install-lib" then
-	ccpkg.installLib(packageName)
-
-elseif command == "uninstall-lib" then
-	ccpkg.uninstallLib(packageName)
-
-elseif command == "install-help" then
- ccpkg.installHelp(packageName)
- 
-elseif command == "uninstall-help" then
- ccpkg.uninstallHelp(packageName)
-
 elseif command == nil then
 	printError("ccpkg: No command specified.")
 
