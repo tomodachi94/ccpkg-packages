@@ -1,7 +1,8 @@
 {
     "reactorcontrol": {
         "provides": [
-            "/bin/reactorcontrol.lua"
+            "/bin/reactorcontrol.lua",
+            "/share/ccstartd/startup/99-reactorcontrol.lua"
         ]
     }
 }
