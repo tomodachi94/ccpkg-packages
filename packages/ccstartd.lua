@@ -4,7 +4,8 @@
 local function initializeDirs()
 	fs.makeDir("/bin")
 	fs.makeDir("/etc")
-	fs.makeDir("/etc")
+	fs.makeDir("/etc/ccstartd")
+	fs.makeDir("/etc/ccstartd/startup")
 	fs.makeDir("/var")
 	fs.makeDir("/var/log")
 	fs.makeDir("/lib")
@@ -42,6 +43,17 @@ local function loadLibs()
 	end
 end
 
+local function startupDir()
+	local startup_dir = "/etc/ccstartd/startup/"
+	local files = fs.list(startup_dir)
+	for k,v in pairs(files) do
+		if string.find(v, ".lua") then
+			shell.run(fs.combine(startup_dir, v))
+		end
+	end
+
+end
+
 local function start()
 	if not fs.exists("/.ccstartd_initialized") then
 		initializeDirs()
@@ -50,6 +62,7 @@ local function start()
 		f.write("true")
 		f.close()
 	end
+	startupDir()
 	setPath()
 	loadLibs()
 end
