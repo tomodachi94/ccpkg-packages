@@ -68,6 +68,11 @@ function install(sPackage)
     local metadata = smartHttp("https://" .. packageHub .. "meta/" .. sPackage .. ".json")
     local metadata = json.decode(metadata)
     if not fs.exists(metadata[sPackage]["provides"][1]) then
+        if metadata[sPackage]["dirs"] then
+            for _,v in pairs(metadata[sPackage]["dirs"]) do
+                fs.makeDir(v)
+            end
+        end
         for _,v in pairs(metadata[sPackage]["provides"]) do
             local url = "https://" .. fs.combine(packageHub, v)
             local file = smartHttp(url)

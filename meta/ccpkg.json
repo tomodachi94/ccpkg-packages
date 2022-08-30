@@ -4,6 +4,10 @@
             "/lib/ccpkg.lua",
             "/bin/ccpkg.lua",
             "/share/help/ccpkg.txt"
+        ],
+        "dirs": [
+            "/etc/ccpkg",
+            "/etc/ccpkg/repos"
         ]
     }    
 }

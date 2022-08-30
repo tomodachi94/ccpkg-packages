@@ -2,6 +2,10 @@
     "ccstartd": {
         "provides": [
             "/bin/ccstartd.lua"
+        ],
+        "dirs": [
+            "/etc/ccstartd",
+            "/etc/ccstartd/startup"
         ]
     }
 }
