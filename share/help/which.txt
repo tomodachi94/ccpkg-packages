@@ -1,0 +1,10 @@
+Shows the full path of a provided program.
+
+    USAGE
+
+$ which ls
+/rom/programs/list.lua
+$ which ls edit which
+/rom/programs/list.lua
+/rom/programs/edit.lua
+/bin/which

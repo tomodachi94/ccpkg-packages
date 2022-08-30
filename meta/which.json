@@ -1,0 +1,8 @@
+{
+    "which" : {
+        "provides": [
+            "/bin/which.lua",
+            "/share/help/which.txt"
+        ]
+    }    
+}
