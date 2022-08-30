@@ -49,11 +49,13 @@ end
 docs["uninstall"] = "Removes a package according to its manifest."
 function uninstall(sPackage)
     local metadata = smartHttp("https://" .. packageHub .. "meta/" .. sPackage .. ".json")
-    local metadata = textutils.unserializeJSON(metadata)
+    local metadata = json.decode(metadata)
     if metadata[sPackage] == false then
         printError("ccpkg: uninstall: Package was never installed")
     else
         for k,v in pairs(metadata[sPackage]["provides"]) do
+            v = string.gsub(v, ".lua", "")
+            v = string.gsub(v, ".txt", "")
             fs.delete(v)
         end
         -- else
@@ -64,7 +66,7 @@ end
 docs["install"] = "Installs a package 'package' according to its manifest."
 function install(sPackage)
     local metadata = smartHttp("https://" .. packageHub .. "meta/" .. sPackage .. ".json")
-    local metadata = textutils.unserializeJSON(metadata)
+    local metadata = json.decode(metadata)
     if not fs.exists(metadata[sPackage]["provides"][1]) then
         for _,v in pairs(metadata[sPackage]["provides"]) do
             local url = "https://" .. fs.combine(packageHub, v)
