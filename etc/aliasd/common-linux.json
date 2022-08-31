@@ -1,0 +1,17 @@
+{
+	"vim": "edit",
+	"vi": "edit",
+	"nvim": "edit",
+	"emacs": "edit",
+	"emacsclient": "edit",
+	"micro": "edit",
+	"nano": "edit",
+	"code": "edit",
+	"ed": "edit",
+	"codium": "edit",
+	"xed": "edit",
+	"gedit": "edit",
+	"atom": "edit",
+	"geany": "edit",
+	"man": "help"
+}
