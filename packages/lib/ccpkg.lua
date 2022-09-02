@@ -12,9 +12,7 @@ docs = {} -- documentation for all methods is located in this table, call print(
 docs["docs"] = "A table which contains docs for all methods in the ccpkg API. Local methods are prefixed by 'local'."
  
 local packageHub = "tomodachi94.github.io/ccpkg-packages/"
-local destination = "/bin/"
-local destinationHelp = "/share/help/" -- unused
-local destinationLib = "/lib/"
+local packageMetadata = "tomodachi94.github.io/ccpkg-packages/meta/"
 
 docs["local.smartHttp"] = "Returns contents of HTTP"
 local function smartHttp(sUrl)
@@ -46,6 +44,9 @@ local function write(sContent, sPath)
 	end
 end
 
+docs["show"] = "Shows a package's metadata. Returns two values, a table representing metadata. The key 'installed' represents install status."
+function show()
+
 docs["uninstall"] = "Removes a package according to its manifest."
 function uninstall(sPackage)
     local metadata = smartHttp("https://" .. packageHub .. "meta/" .. sPackage .. ".json")
@@ -65,7 +66,7 @@ end
 
 docs["install"] = "Installs a package 'package' according to its manifest."
 function install(sPackage)
-    local metadata = smartHttp("https://" .. packageHub .. "meta/" .. sPackage .. ".json")
+    local metadata = smartHttp("https://" .. packageMetadata .. sPackage .. ".json")
     local metadata = json.decode(metadata)
     if not fs.exists(metadata[sPackage]["provides"][1]) then
         if metadata[sPackage]["dirs"] then
